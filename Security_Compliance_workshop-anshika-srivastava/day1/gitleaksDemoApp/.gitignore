@@ -1,14 +1,14 @@
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
+mvnw
+mvnw.cmd
+.gitattributes
+.mvn
+
+
 !**/src/main/**/target/
 !**/src/test/**/target/
-gitleaksDemoApp/.idea/
-gitleaksDemoApp/target/
-gitleaksDemoApp/.mvn/
-gitleaksDemoApp/.gitattributes
-gitleaksDemoApp/mvnw
-gitleaksDemoApp/mvnw.cmd
 
 ### STS ###
 .apt_generated
