@@ -1,0 +1,9 @@
+############################
+# Ignore gitleaksDemoApp artifacts
+############################
+Security_Compliance_workshop-anshika-srivastava/day1/gitleaksDemoApp/.idea/
+Security_Compliance_workshop-anshika-srivastava/day1/gitleaksDemoApp/target/
+Security_Compliance_workshop-anshika-srivastava/day1/gitleaksDemoApp/.mvn/
+Security_Compliance_workshop-anshika-srivastava/day1/gitleaksDemoApp/.gitattributes
+Security_Compliance_workshop-anshika-srivastava/day1/gitleaksDemoApp/mvnw
+Security_Compliance_workshop-anshika-srivastava/day1/gitleaksDemoApp/mvnw.cmd
