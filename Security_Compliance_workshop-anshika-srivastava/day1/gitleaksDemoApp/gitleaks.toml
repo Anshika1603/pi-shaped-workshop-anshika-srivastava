@@ -1,7 +1,0 @@
-title = "Custom Gitleaks Rules"
-
-[[rules]]
-id = "spring-datasource-password"
-description = "Spring Boot datasource password"
-regex = '''spring\.datasource\.password\s*=\s*['"]?.+['"]?'''
-tags = ["spring", "password"]
