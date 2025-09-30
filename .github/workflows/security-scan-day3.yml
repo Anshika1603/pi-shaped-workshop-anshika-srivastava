@@ -82,10 +82,11 @@ jobs:
       - name: Install app deps
         run: |
           python -m pip install --upgrade pip
-          pip install -r day3/requirements.txt
+          pip install -r Security_Compliance_workshop-anshika-srivastava/day3/requirements.txt
 
       - name: Start Flask app (background)
         run: |
+          cd Security_Compliance_workshop-anshika-srivastava/day3
           nohup python app.py > flask.log 2>&1 &
           for i in {1..15}; do curl -sS http://localhost:5000 && break || sleep 1; done
 
