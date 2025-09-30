@@ -1,0 +1,109 @@
+name: CI - Secure Scans
+
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+
+jobs:
+  static-scans:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install scanning tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit semgrep
+
+      - name: Run Bandit (HTML)
+        run: |
+          mkdir -p reports
+          bandit -r . -f html -o reports/bandit-report.html || true
+
+      - name: Run Semgrep (JSON)
+        run: |
+          mkdir -p reports
+          semgrep --config=auto --json --output=reports/semgrep-report.json || true
+
+      - name: Upload static-scan reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-scan-reports
+          path: reports/
+
+
+  gitleaks-scan:
+    runs-on: ubuntu-latest
+    needs: static-scans
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
+        continue-on-error: true
+
+      - name: Upload Gitleaks Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.html
+
+
+  zaproxy-scan:
+    runs-on: ubuntu-latest
+    needs: [static-scans, gitleaks-scan]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install app deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r day3/requirements.txt
+
+      - name: Start Flask app (background)
+        run: |
+          nohup python app.py > flask.log 2>&1 &
+          for i in {1..15}; do curl -sS http://localhost:5000 && break || sleep 1; done
+
+      - name: ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.12.0
+        with:
+          target: 'http://host.docker.internal:5000'
+          fail_action: 'false'
+          artifact_name: 'zap-report'
+
+      - name: List generated reports
+        run: ls -lh ${{ github.workspace }}
+
+      - name: Upload ZAP Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: zapscan
+          path: |
+            ${{ github.workspace }}/report_json.json
+            ${{ github.workspace }}/report_md.md
+            ${{ github.workspace }}/report_html.html
