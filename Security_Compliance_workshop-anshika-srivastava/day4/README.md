@@ -58,7 +58,7 @@ Scan Running Flask App for Runtime Vulnerabilities
 
 ```bash
 sudo docker run --rm --network host \
-    -v "/home/nashtech/Downloads/pi_shaped_training/Security_Compliance_workshop-Shrasti/day4:/zap/wrk/" \
+    -v "/home/nashtech//Downloads/pi-shaped-workshop-anshika-srivastava/Security_Compliance_workshop-anshika-srivastava/day4:/zap/wrk/" \
     -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
     -t http://127.0.0.1:5000 \
     -r zap-report.html
@@ -82,7 +82,6 @@ sudo docker run --rm --network host \
 * **Bandit Report:** ![bandir report Summary](screenshots/bandit-report.png)
 * **Semgrep Report:** ![Semgrep report Summary](screenshots/semgrep-report.png)
 * **trivy Report:** ![Trivy Report Summary](screenshots/trivy-report.png)
-* **ZAP Report:** ![ZAP report Summary](screenshots/zap-report.png)
 
 ---
 
