@@ -124,7 +124,6 @@ jobs:
             -v ${{ github.workspace }}/Security_Compliance_workshop-anshika-srivastava/day4:/zap/wrk \
             ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
             -t http://host.docker.internal:5000/ \
-            -g gen.conf \
             -J zap-report.json \
             -w zap-report.md \
             -r zap-report.html || true
