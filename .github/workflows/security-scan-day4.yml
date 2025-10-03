@@ -115,11 +115,16 @@ jobs:
           echo "--- App failed to start. Displaying logs from app.log: ---"
           cat app.log
 
+      - name: Fix permissions on workspace
+        run: |
+          sudo chown -R 1000:1000 ${{ github.workspace }}
+          sudo chmod -R u+rwX ${{ github.workspace }}
+
       - name: Run ZAP Baseline Scan via Docker
         continue-on-error: true
         run: |
-          sudo chown 1000:1000 ${{ github.workspace }}
           docker run --rm \
+            --user 1000:1000 \
             --add-host=host.docker.internal:host-gateway \
             -v ${{ github.workspace }}/Security_Compliance_workshop-anshika-srivastava/day4:/zap/wrk \
             ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
