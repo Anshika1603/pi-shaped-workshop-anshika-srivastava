@@ -27,18 +27,18 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd Security_Compliance_workshop-anshika-srivastava/day4
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+        working-directory: Security_Compliance_workshop-anshika-srivastava/day4
 
       # ------------------------------
       # Bandit Scan
       # ------------------------------
       - name: Run Bandit security scan
         run: |
-          cd Security_Compliance_workshop-anshika-srivastava/day4
           pip install bandit
           bandit -r . -f html -o bandit-report.html
+        working-directory: Security_Compliance_workshop-anshika-srivastava/day4
 
       - name: Upload Bandit Report
         uses: actions/upload-artifact@v4
@@ -47,14 +47,16 @@ jobs:
           path: Security_Compliance_workshop-anshika-srivastava/day4/bandit-report.html
 
       # ------------------------------
-      # Semgrep Scan
+      # Semgrep Scan (using CLI for JSON and SARIF outputs)
       # ------------------------------
+      - name: Install Semgrep
+        run: pip install semgrep
+
       - name: Run Semgrep scan
-        uses: returntocorp/semgrep-action@v2
-        with:
-          config: "p/ci"
-          output: Security_Compliance_workshop-anshika-srivastava/day4/semgrep-report.json
-          sarif: Security_Compliance_workshop-anshika-srivastava/day4/semgrep-report.sarif
+        run: |
+          semgrep --config=p/ci --json --output=semgrep-report.json
+          semgrep --config=p/ci --sarif --output=semgrep-report.sarif
+        working-directory: Security_Compliance_workshop-anshika-srivastava/day4
 
       - name: Upload Semgrep Report
         uses: actions/upload-artifact@v4
@@ -67,39 +69,48 @@ jobs:
       # ------------------------------
       # Trivy Scan (Python dependencies)
       # ------------------------------
-      - name: Install Trivy
-        uses: aquasecurity/trivy-action@v1
+      - name: Run Trivy FS scan
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: 'fs'
-          format: 'table'
-          exit-code: '0'
+          format: 'html'
+          output: Security_Compliance_workshop-anshika-srivastava/day4/trivy-report.html
           vuln-type: 'os,library'
           ignore-unfixed: true
           path: Security_Compliance_workshop-anshika-srivastava/day4
+          exit-code: '0'
+
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: Security_Compliance_workshop-anshika-srivastava/day4/trivy-report.html
 
       # ------------------------------
       # OWASP ZAP Scan
       # ------------------------------
       - name: Start Flask app
         run: |
-          cd Security_Compliance_workshop-anshika-srivastava/day4
           nohup flask run --host=0.0.0.0 --port=5000 &
           echo "Waiting for Flask app to start..."
           for i in {1..15}; do
             curl -sSf http://127.0.0.1:5000 && break
             sleep 2
           done
+        working-directory: Security_Compliance_workshop-anshika-srivastava/day4
 
       - name: Run ZAP Baseline Scan
         continue-on-error: true
         run: |
-          docker run --rm -v ${{ github.workspace }}/Security_Compliance_workshop-anshika-srivastava/day4:/zap/wrk \
+          docker run --rm --add-host=host.docker.internal:host-gateway \
+            -v ${{ github.workspace }}/Security_Compliance_workshop-anshika-srivastava/day4:/zap/wrk \
             ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-            -t http://127.0.0.1:5000/ \
+            -t http://host.docker.internal:5000/ \
             -g gen.conf \
             -J zap-report.json \
             -w zap-report.md \
             -r zap-report.html
+        working-directory: Security_Compliance_workshop-anshika-srivastava/day4
 
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v4
