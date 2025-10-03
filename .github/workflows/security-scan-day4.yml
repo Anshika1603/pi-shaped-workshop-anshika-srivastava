@@ -99,7 +99,7 @@ jobs:
       - name: Start Flask App
         run: |
           cd Security_Compliance_workshop-anshika-srivastava/day4
-          nohup python vulnerable-app.py > app.log 2>&1 &
+          nohup python vulnerable-app.py --host=0.0.0.0 --port=5000 > app.log 2>&1 &
           echo "Waiting for app to start..."
           for i in {1..10}; do
             curl --fail http://localhost:5000 && break
@@ -121,13 +121,13 @@ jobs:
           sudo chown 1000:1000 ${{ github.workspace }}
           docker run --rm \
             --add-host=host.docker.internal:host-gateway \
-            -v ${{ github.workspace }}:/zap/wrk \
+            -v ${{ github.workspace }}/Security_Compliance_workshop-anshika-srivastava/day4:/zap/wrk \
             ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
             -t http://host.docker.internal:5000/ \
             -g gen.conf \
-            -J report_json.json \
-            -w report_md.md \
-            -r report_html.html
+            -J zap-report.json \
+            -w zap-report.md \
+            -r zap-report.html
 
       - name: Upload ZAP DAST Reports
         uses: actions/upload-artifact@v4
