@@ -81,7 +81,8 @@ sudo docker run --rm --network host \
 
 * **Bandit Report:** ![bandir report Summary](screenshots/bandit-report.png)
 * **Semgrep Report:** ![Semgrep report Summary](screenshots/semgrep-report.png)
-* **trivy Report:** ![Trivy Report Summary](screenshots/trivy-report.png)
+* **Trivy Report:** ![Trivy Report Summary](screenshots/trivy-report.png)
+* **Zap Report:** ![Zap Scanning Report Summary](screenshots/zap-report.png)
 
 ---
 
