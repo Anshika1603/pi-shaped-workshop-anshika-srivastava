@@ -67,6 +67,12 @@ jobs:
           output: "trivy-report.txt"
           exit-code: "0"
 
+      - name: Upload Trivy table report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-table
+          path: trivy-report.txt
+
       # ---------------------
       # 4. Checkov (Terraform/Infra IaC Scan)
       # ---------------------
