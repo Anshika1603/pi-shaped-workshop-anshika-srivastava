@@ -1,0 +1,4 @@
+flask==2.1.3
+werkzeug==2.1.2
+requests==2.19.1
+# (requests 2.19.1 is old and will be flagged by Trivy/OSS DB as potentially vulnerable)

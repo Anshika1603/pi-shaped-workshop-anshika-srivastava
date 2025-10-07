@@ -1,0 +1,105 @@
+name: Security Scan Day5
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  security_scans:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          cd Security_Compliance_workshop-anshika-srivastava/day5
+          pip install -r requirements.txt
+
+      # ---------------------
+      # 1. Bandit Scan (Python SAST)
+      # ---------------------
+      - name: Run Bandit
+        run: |
+          cd Security_Compliance_workshop-anshika-srivastava/day5
+          bandit -r . -f html -o bandit-report.html
+        continue-on-error: true
+
+      # ---------------------
+      # 2. Semgrep Scan
+      # ---------------------
+      - name: Run Semgrep
+        run: |
+          cd Security_Compliance_workshop-anshika-srivastava/day5
+          semgrep --config=p/ci --output=semgrep-report.json --json
+        continue-on-error: true
+
+      # ---------------------
+      # 3. Trivy (Dependencies & Docker Image)
+      # ---------------------
+      - name: Build Docker Image
+        run: |
+          cd Security_Compliance_workshop-anshika-srivastava/day5
+          docker build -t flask-app:latest .
+
+      - name: Run Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "flask-app:latest"
+          format: "table"
+          output: "trivy-report.txt"
+          exit-code: "0"
+
+      # ---------------------
+      # 4. Checkov (Terraform/Infra IaC Scan)
+      # ---------------------
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: Security_Compliance_workshop-anshika-srivastava/day5
+          output_format: cli
+          quiet: true
+
+      # ---------------------
+      # 5. Gitleaks (Secret Scan)
+      # ---------------------
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source . --report-path gitleaks-report.json --report-format json
+
+      # ---------------------
+      # 6. OWASP ZAP (DAST Scan)
+      # ---------------------
+      - name: Run Flask app container
+        run: |
+          docker run -d -p 5000:5000 --name flask-app flask-app:latest
+          sleep 10  # wait for app to start
+
+      - name: Run OWASP ZAP Baseline Scan
+        run: |
+          docker run --network host -v $(pwd):/zap/wrk/:rw ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py -t http://localhost:5000 -r zap-report.html
+        continue-on-error: true
+
+      # ---------------------
+      # Upload Reports
+      # ---------------------
+      - name: Upload Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports-day5
+          path: |
+            Security_Compliance_workshop-anshika-srivastava/day5/*.html
+            Security_Compliance_workshop-anshika-srivastava/day5/*.json
+            Security_Compliance_workshop-anshika-srivastava/day5/*.txt
